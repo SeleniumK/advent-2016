@@ -1,6 +1,6 @@
 # test_inst = ["ULL", "RRDDD", "LURDL", "UUUUD"]
 
-with open('day-2-input.txt', 'r') as f:
+with open('input/day-2-input.txt', 'r') as f:
     instructions = f.read().splitlines()
 
 
