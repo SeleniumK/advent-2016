@@ -10,10 +10,10 @@ def find_pieces(ip):
     import re
 
     in_brackets = r"\[(\w+)\]"
-    m = set(re.findall(in_brackets, ip))
-    ip = set(re.split(in_brackets, ip)) - m
+    hypernet = set(re.findall(in_brackets, ip))
+    ip = set(re.split(in_brackets, ip)) - hypernet
 
-    return m, ip
+    return hypernet, ip
 
 
 def check_mirror(string):
@@ -40,53 +40,48 @@ def count_tls_supporting_ips(ips):
     """Given a list, return a count where m has no mirroring and the ip string does."""
     count = 0
     for ip in ips:
-        m, ip = find_pieces(ip)
-        if not sum(check_mirror(s) for s in m):
+        hypernet, ip = find_pieces(ip)
+        if not sum(check_mirror(s) for s in hypernet):
             if sum(check_mirror(i) for i in ip):
                 count += 1
     return count
 
+    # return sum(
+    #     (not sum(check_mirror(s) for s in hypernet)) and
+    #     (sum(check_mirror(i) for i in ip))
+    #     for ip in ips for hypernet, ip in find_pieces(ip)
+    # )
+
 
 def get_abas(ips):
-    abas = []
-
-    for ip in ips:
-        for i, char in enumerate(ip):
-            if(
-                i > 0 and
-                i + 2 < len(ip) and
-                char == ip[i + 2] and
-                char != ip[i + 1]
-            ):
-                abas.append(ip[i:i + 3])
-    return abas
+    def cond(i, char, ip):
+        return (
+            i > 0 and
+            i + 2 < len(ip) and
+            char == ip[i + 2] and
+            char != ip[i + 1]
+        )
+    return [ip[i:i + 3] for ip in ips for i, char in enumerate(ip) if cond(i, char, ip)]
 
 
 def get_babs_from_abas(abas):
-    babs = []
-    for aba in abas:
-        babs.append(aba[1] + aba[0] + aba[1])
-    return babs
+    return [aba[1::] + aba[1] for aba in abas]
 
 
-def check_babs(ms, babs):
-    for m in ms:
-        for bab in babs:
-            print(bab, m)
-            if bab in m:
-                print("is substring")
-                return True
-    return False
+def check_babs(hypernet, babs):
+    return any(bab in h for bab in babs for h in hypernet)
 
 
 def count_ssl_supporting_ips(ips):
     count = 0
     for ip in ips:
-        m, ip = find_pieces(ip)
-        babs = get_babs_from_abas(get_abas(ip))
-        if check_babs(m, babs):
-            count += 1
+        h, i = find_pieces(ip)
+        count += check_babs(h, get_babs_from_abas(get_abas(i)))
     return count
+
+    # return sum(
+    #     check_babs(h, get_babs_from_abas(get_abas(i))) for ip in ips for h, i in find_pieces(ip)
+    # )
 
 
 if __name__ == "__main__":
