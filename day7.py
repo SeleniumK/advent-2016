@@ -56,7 +56,6 @@ def count_tls_supporting_ips(ips):
 def get_abas(ips):
     def cond(i, char, ip):
         return (
-            i > 0 and
             i + 2 < len(ip) and
             char == ip[i + 2] and
             char != ip[i + 1]
